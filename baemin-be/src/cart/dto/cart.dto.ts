@@ -24,7 +24,6 @@ export class UpdateCartItemDto {
   @Min(0)
   quantity: number;
 }
-
 export class CartItemDto {
   @ApiProperty({ description: 'ID of the menu item' })
   id: number;
@@ -40,6 +39,9 @@ export class CartItemDto {
 
   @ApiProperty({ description: 'Subtotal for this item (price * quantity)' })
   subtotal: number;
+
+  @ApiProperty({ description: 'Image URL of the menu item' })
+  image_url: string;
 }
 
 export class CartDto {

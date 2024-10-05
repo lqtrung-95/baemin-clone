@@ -31,6 +31,7 @@ export class CartService {
       price: Number(item.menu_items.price),
       quantity: item.quantity,
       subtotal: item.quantity * Number(item.menu_items.price),
+      image_url: item.menu_items.image_url || '', // Include the image_url
     }));
 
     const total = items.reduce((sum, item) => sum + item.subtotal, 0);

@@ -11,23 +11,49 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { User } from '../users/decorators/user.decorator';
 import { CartService } from './cart.service';
-import { AddToCartDto, CartDto, UpdateCartItemDto } from './dto/cart.dto';
+import {
+  AddToCartDto,
+  CartDto,
+  CartItemDto,
+  UpdateCartItemDto,
+} from './dto/cart.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @ApiTags('cart')
 @Controller('cart')
 @Auth()
 export class CartController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(
+    private readonly cartService: CartService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  @Get()
-  @ApiOperation({ summary: "Get user's cart" })
-  @ApiResponse({
-    status: 200,
-    description: "User's cart retrieved successfully",
-    type: CartDto,
-  })
-  async getCart(@User() userId: number): Promise<CartDto> {
-    return this.cartService.getCart(userId);
+  async getCart(userId: number): Promise<CartDto> {
+    const cart = await this.prisma.cart.findUnique({
+      where: { user_id: userId },
+      include: {
+        cart_items: {
+          include: { menu_items: true },
+        },
+      },
+    });
+
+    if (!cart) {
+      return { items: [], total: 0 };
+    }
+
+    const items: CartItemDto[] = cart.cart_items.map((item) => ({
+      id: item.menu_items.item_id,
+      name: item.menu_items.name,
+      price: Number(item.menu_items.price),
+      quantity: item.quantity,
+      subtotal: item.quantity * Number(item.menu_items.price),
+      image_url: item.menu_items.image_url || '', // Include the image_url
+    }));
+
+    const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+    return { items, total };
   }
 
   @Post('add')
