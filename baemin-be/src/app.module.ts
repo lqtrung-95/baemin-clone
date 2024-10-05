@@ -9,6 +9,7 @@ import { BannersModule } from './banners/banners.module';
 import { FoodCategoriesModule } from './food-categories/food-categories.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartModule } from './cart/cart.module';
+import { CheckoutModule } from './checkout/checkout.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CartModule } from './cart/cart.module';
     FoodCategoriesModule,
     RestaurantsModule,
     CartModule,
+    CheckoutModule,
   ],
   controllers: [AppController],
   providers: [AppService],
