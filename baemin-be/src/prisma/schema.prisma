@@ -19,20 +19,25 @@ model banner_carousel {
 }
 
 model cart {
-  cart_id    Int          @id @default(autoincrement())
-  user_id    Int?
-  created_at DateTime?    @default(now()) @db.Timestamp(6)
-  users      users?       @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  id         Int          @id @default(autoincrement())
+  user_id    Int          @unique
+  users      users        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
   cart_items cart_items[]
+
+  @@index([user_id], map: "idx_cart_user_id")
 }
 
 model cart_items {
-  cart_item_id Int         @id @default(autoincrement())
-  cart_id      Int?
-  item_id      Int?
+  id           Int        @id @default(autoincrement())
+  cart_id      Int
+  menu_item_id Int
   quantity     Int
-  cart         cart?       @relation(fields: [cart_id], references: [cart_id], onDelete: NoAction, onUpdate: NoAction)
-  menu_items   menu_items? @relation(fields: [item_id], references: [item_id], onDelete: NoAction, onUpdate: NoAction)
+  cart         cart       @relation(fields: [cart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [item_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([cart_id, menu_item_id])
+  @@index([cart_id], map: "idx_cart_items_cart_id")
+  @@index([menu_item_id], map: "idx_cart_items_menu_item_id")
 }
 
 model delivery_status {
@@ -155,7 +160,7 @@ model users {
   first_name   String?   @db.VarChar(50)
   last_name    String?   @db.VarChar(50)
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
-  cart         cart[]
+  cart         cart?
   orders       orders[]
   reviews      reviews[]
 }

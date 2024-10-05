@@ -10,6 +10,10 @@ export class UsersService {
     return this.prisma.users.findUnique({ where: { email } });
   }
 
+  async findOneById(user_id: number) {
+    return this.prisma.users.findUnique({ where: { user_id } });
+  }
+
   async create(data: SignupDto) {
     return this.prisma.users.create({ data });
   }

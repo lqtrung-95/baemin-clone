@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeaturedContentResponseDto } from './dto/featured-content-response.dto';
@@ -163,6 +167,125 @@ export class RestaurantsService {
     page: number,
     limit: number,
   ): PaginatedResponseDto<T> {
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getRestaurantDetails(id: number) {
+    const restaurant = await this.prisma.restaurants.findUnique({
+      where: { restaurant_id: id },
+      include: {
+        restaurant_submenu: true,
+      },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException(`Restaurant with ID ${id} not found`);
+    }
+
+    return {
+      id: restaurant.restaurant_id,
+      name: restaurant.name,
+      address: restaurant.address,
+      rating: restaurant.rating,
+      openingHours: restaurant.opening_hours,
+      priceRange: '99.000 - 399.000', // This should be calculated or stored in the database
+      serviceCharge: 0.8, // This should be stored in the database or configuration
+      categories: restaurant.restaurant_submenu.map((submenu) => submenu.name),
+    };
+  }
+
+  async getRestaurantSubmenus(id: number) {
+    const submenus = await this.prisma.restaurant_submenu.findMany({
+      where: { restaurant_id: id },
+      orderBy: { display_order: 'asc' },
+    });
+
+    if (submenus.length === 0) {
+      throw new NotFoundException(
+        `Sub-menus not found for restaurant with ID ${id}`,
+      );
+    }
+
+    return submenus.map((submenu) => ({
+      id: submenu.submenu_id,
+      name: submenu.name,
+      displayOrder: submenu.display_order,
+    }));
+  }
+
+  async getRestaurantMenu(id: number, submenuId?: number) {
+    const menuItems = await this.prisma.menu_items.findMany({
+      where: {
+        restaurant_id: id,
+        submenu_id: submenuId,
+      },
+      include: {
+        restaurant_submenu: true,
+      },
+    });
+
+    if (menuItems.length === 0) {
+      throw new NotFoundException(
+        `Menu items not found for restaurant with ID ${id}`,
+      );
+    }
+
+    return menuItems.map((item) => ({
+      id: item.item_id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      imageUrl: item.image_url,
+      submenuId: item.submenu_id,
+      submenuName: item.restaurant_submenu?.name,
+    }));
+  }
+
+  async getRestaurantPromotions(id: number) {
+    // This would require a new table in the DB to store promotions
+    // For now, we'll return a mock promotion
+    return [
+      {
+        id: 1,
+        title: 'Mua 2 Tặng 2 Gà Rán',
+        description:
+          'Bao gồm: 4 Miếng Gà (Cay/Không Cay), 2 Nước Vừa. Đã bao gồm 2x Tương Cà, 1x Tương Ớt Ngọt, 1x Tương Ớt Tỏi',
+        price: 118000,
+      },
+    ];
+  }
+
+  async getRestaurantReviews(id: number, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.reviews.findMany({
+        where: { restaurant_id: id },
+        skip,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+        include: { users: true },
+      }),
+      this.prisma.reviews.count({ where: { restaurant_id: id } }),
+    ]);
+
+    const items = reviews.map((review) => ({
+      id: review.review_id,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.created_at,
+      user: {
+        id: review.users.user_id,
+        name: `${review.users.first_name} ${review.users.last_name}`.trim(),
+      },
+    }));
+
     return {
       items,
       total,
