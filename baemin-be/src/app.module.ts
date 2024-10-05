@@ -5,6 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { BannersModule } from './banners/banners.module';
+import { FoodCategoriesModule } from './food-categories/food-categories.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     AuthModule,
     UsersModule,
+    BannersModule,
+    FoodCategoriesModule,
+    RestaurantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
