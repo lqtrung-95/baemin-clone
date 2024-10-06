@@ -3,7 +3,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 export class RestaurantDto {
   @ApiProperty()
-  id: number;
+  restaurant_id: number;
 
   @ApiProperty()
   name: string;

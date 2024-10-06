@@ -152,7 +152,7 @@ export class RestaurantsService {
 
   private mapRestaurantToDto(restaurant: any): RestaurantDto {
     return {
-      id: restaurant.restaurant_id,
+      restaurant_id: restaurant.restaurant_id,
       name: restaurant.name,
       imageUrl: restaurant.menu_items[0]?.image_url || '',
       address: restaurant.address,
@@ -193,9 +193,9 @@ export class RestaurantsService {
       name: restaurant.name,
       address: restaurant.address,
       rating: restaurant.rating,
-      openingHours: restaurant.opening_hours,
-      priceRange: '99.000 - 399.000', // This should be calculated or stored in the database
-      serviceCharge: 0.8, // This should be stored in the database or configuration
+      opening_hours: restaurant.opening_hours,
+      price_range: '99.000 - 399.000', // This should be calculated or stored in the database
+      service_charge: 0.8, // This should be stored in the database or configuration
       categories: restaurant.restaurant_submenu.map((submenu) => submenu.name),
     };
   }
@@ -213,7 +213,7 @@ export class RestaurantsService {
     }
 
     return submenus.map((submenu) => ({
-      id: submenu.submenu_id,
+      submenu_id: submenu.submenu_id,
       name: submenu.name,
       displayOrder: submenu.display_order,
     }));
