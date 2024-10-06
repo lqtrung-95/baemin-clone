@@ -1,28 +1,22 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CheckoutService } from './checkout.service';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 import { User } from '../users/decorators/user.decorator';
+import { CheckoutService } from './checkout.service';
 import {
-  OrderSummaryDto,
   DeliveryAddressDto,
-  VoucherDto,
   DeliveryOptionDto,
-  PlaceOrderDto,
-  OrderConfirmationDto,
   DeliveryOptionsDto,
+  OrderConfirmationDto,
+  OrderSummaryDto,
   PaymentMethodsDto,
+  PlaceOrderDto,
+  VoucherDto,
 } from './dto/checkout.dto';
 
 @ApiTags('checkout')
 @Controller('checkout')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@Auth()
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
 

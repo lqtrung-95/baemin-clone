@@ -49,7 +49,7 @@ export class CartDto {
     type: [CartItemDto],
     description: 'Array of items in the cart',
   })
-  items: CartItemDto[];
+  cart_items: CartItemDto[];
 
   @ApiProperty({ description: 'Total price of all items in the cart' })
   total: number;

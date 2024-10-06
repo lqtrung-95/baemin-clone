@@ -3,12 +3,14 @@ import {
   UnauthorizedException,
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from 'src/users/users.service';
+import { users } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +41,7 @@ export class AuthService {
   }
 
   async signup(signupDto: SignupDto) {
-    const { email, password } = signupDto;
+    const { email, password, ...rest } = signupDto;
     const existingUser = await this.userService.findOne(email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -51,6 +53,7 @@ export class AuthService {
       const newUser = await this.userService.create({
         email,
         password: hash,
+        ...rest,
       });
       const { password: _, ...result } = newUser;
       return result;
@@ -58,5 +61,12 @@ export class AuthService {
       console.error('Signup error:', error);
       throw new InternalServerErrorException('Something went wrong');
     }
+  }
+  async getProfile(userId: number): Promise<users> {
+    const user = await this.userService.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

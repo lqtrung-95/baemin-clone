@@ -237,13 +237,13 @@ export class RestaurantsService {
     }
 
     return menuItems.map((item) => ({
-      id: item.item_id,
+      item_id: item.item_id,
       name: item.name,
       description: item.description,
       price: item.price,
       imageUrl: item.image_url,
-      submenuId: item.submenu_id,
-      submenuName: item.restaurant_submenu?.name,
+      submenu_id: item.submenu_id,
+      submenu_name: item.restaurant_submenu?.name,
     }));
   }
 

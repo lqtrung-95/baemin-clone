@@ -18,13 +18,22 @@ import {
   useRestaurantSubmenus,
   useRestaurantMenu,
 } from '@/hooks/useApi';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  useCart,
+  useAddToCart,
+  useUpdateCartItem,
+  useRemoveFromCart,
+  useClearCart,
+} from '@/hooks/useCart';
 
 export default function RestaurantDetail() {
   const params = useParams();
   const restaurantId =
     typeof params.id === 'string' ? parseInt(params.id, 10) : null;
+
+  const router = useRouter();
 
   const {
     data: restaurant,
@@ -47,6 +56,33 @@ export default function RestaurantDetail() {
     isLoading: isLoadingMenu,
     error: menuError,
   } = useRestaurantMenu(restaurantId, selectedSubmenuId);
+
+  const { data: cart, isLoading: isCartLoading } = useCart();
+  const addToCart = useAddToCart();
+  const updateCartItem = useUpdateCartItem();
+  const removeFromCart = useRemoveFromCart();
+  const clearCart = useClearCart();
+
+  const handleAddToCart = (menuItemId: number) => {
+    addToCart.mutate({ menuItemId, quantity: 1 });
+  };
+
+  const handleUpdateQuantity = (menuItemId: number, quantity: number) => {
+    updateCartItem.mutate({ menuItemId, quantity });
+  };
+
+  const handleRemoveItem = (menuItemId: number) => {
+    removeFromCart.mutate(menuItemId);
+  };
+
+  const handleClearCart = () => {
+    clearCart.mutate();
+  };
+
+  const handleCheckout = () => {
+    router.push('/cart');
+  };
+
   console.log('🚀 ~ RestaurantDetail ~ menuItems:', menuItems);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,6 +119,7 @@ export default function RestaurantDetail() {
         false),
   );
 
+  console.log('🚀 ~ RestaurantDetail ~ menuItems:', menuItems);
   return (
     <div className="flex flex-col w-full h-auto">
       <div className="bg-white w-full h-80 flex">
@@ -250,9 +287,12 @@ export default function RestaurantDetail() {
                         </span>
                       </div>
                       <div className="w-[10%] flex justify-center items-center">
-                        <div className="h-6 w-6 rounded-md flex justify-center items-center bg-beamin text-white font-bold cursor-pointer hover:brightness-110">
+                        <button
+                          onClick={() => handleAddToCart(item.item_id)}
+                          className="h-6 w-6 rounded-md flex justify-center items-center bg-beamin text-white font-bold cursor-pointer hover:brightness-110"
+                        >
                           <PlusOutlined />
-                        </div>
+                        </button>
                       </div>
                     </div>
                   ))
@@ -260,9 +300,84 @@ export default function RestaurantDetail() {
               </div>
             </div>
           </div>
-          <div className="w-[30%] bg-white p-4">
-            <h2 className="font-bold text-lg mb-4">Your Order</h2>
-            <div className="text-center text-gray-500">Your cart is empty</div>
+          <div className="w-[30%] bg-white p-6 shadow-md rounded-lg">
+            <h2 className="font-bold text-xl mb-6 text-gray-800">Your Order</h2>
+            {isCartLoading ? (
+              <div className="text-center text-gray-500">Loading cart...</div>
+            ) : cart && cart.cart_items.length > 0 ? (
+              <>
+                {cart.cart_items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-col mb-4 pb-4 border-b border-gray-200"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium text-gray-700">
+                        {item.name}
+                      </span>
+                      <span className="text-gray-600">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full hover:bg-gray-300 transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="mx-3 font-medium">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full hover:bg-gray-300 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="mt-6 pb-4 border-b border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-gray-700">Total:</span>
+                    <span className="font-bold text-gray-700">
+                      ${cart.total.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-between">
+                  <button
+                    onClick={handleClearCart}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  >
+                    Clear Cart
+                  </button>
+                  <button
+                    onClick={handleCheckout}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    Checkout
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-gray-500">
+                Your cart is empty
+              </div>
+            )}
           </div>
         </div>
       </div>

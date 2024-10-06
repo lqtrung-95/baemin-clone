@@ -22,21 +22,21 @@ export class CartService {
     });
 
     if (!cart) {
-      return { items: [], total: 0 };
+      return { cart_items: [], total: 0 };
     }
 
-    const items: CartItemDto[] = cart.cart_items.map((item) => ({
+    const cart_items: CartItemDto[] = cart.cart_items.map((item) => ({
       id: item.menu_items.item_id,
       name: item.menu_items.name,
       price: Number(item.menu_items.price),
       quantity: item.quantity,
       subtotal: item.quantity * Number(item.menu_items.price),
-      image_url: item.menu_items.image_url || '', // Include the image_url
+      image_url: item.menu_items.image_url || '',
     }));
 
-    const total = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const total = cart_items.reduce((sum, item) => sum + item.subtotal, 0);
 
-    return { items, total };
+    return { cart_items, total };
   }
 
   async addToCart(
@@ -105,7 +105,7 @@ export class CartService {
       await this.prisma.cart_items.deleteMany({
         where: {
           cart_id: cart.id,
-          menu_item_id: menuItemId,
+          menu_item_id: Number(menuItemId),
         },
       });
     }
@@ -125,7 +125,7 @@ export class CartService {
     await this.prisma.cart_items.deleteMany({
       where: {
         cart_id: cart.id,
-        menu_item_id: menuItemId,
+        menu_item_id: Number(menuItemId),
       },
     });
 

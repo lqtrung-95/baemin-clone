@@ -4,6 +4,7 @@ import { Auth } from './decorators/auth.decorator';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/users/decorators/user.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -28,7 +29,7 @@ export class AuthController {
 
   @Auth()
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@User() userId: number) {
+    return this.authService.getProfile(userId);
   }
 }

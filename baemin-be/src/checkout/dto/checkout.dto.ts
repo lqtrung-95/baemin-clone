@@ -65,8 +65,9 @@ export class DeliveryAddressDto {
   address: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  phone_number: string;
+  phone_number?: string;
 
   @ApiProperty()
   @IsOptional()
@@ -87,7 +88,8 @@ export class DeliveryOptionDto {
 
   @ApiProperty()
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
 }
 
 export class PaymentMethodDto {

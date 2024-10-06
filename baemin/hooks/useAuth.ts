@@ -1,7 +1,8 @@
-// hooks/useAuth.js
+'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiService, { removeToken, setToken } from '@/services/api';
+import { users } from '@prisma/client';
 interface LoginCredentials {
   email: string;
   password: string;
@@ -9,6 +10,15 @@ interface LoginCredentials {
 
 interface LoginResponse {
   access_token: string;
+}
+
+interface SignUpDto {
+  email: string;
+  password: string;
+  phone_number: string;
+  address: string;
+  first_name: string;
+  last_name: string;
 }
 
 export function useLogin() {
@@ -33,17 +43,17 @@ export function useLogin() {
 // Signup hook
 export function useSignup() {
   return useMutation({
-    mutationFn: (userData) => apiService.post('/auth/signup', userData),
-    // You might want to automatically log the user in after signup
-    // or handle the response in some other way
+    mutationFn: (userData: SignUpDto) =>
+      apiService.post('/auth/signup', userData),
   });
 }
 
 // Profile hook
 export function useProfile() {
-  return useQuery({
+  return useQuery<users>({
     queryKey: ['profile'],
-    queryFn: () => apiService.get('/auth/profile').then((res) => res.data),
+    queryFn: () =>
+      apiService.get<users>('/auth/profile').then((res) => res.data),
     // The profile should only be fetched if we have a token
     enabled: !!localStorage.getItem('authToken'),
   });
