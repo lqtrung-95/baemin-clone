@@ -220,3 +220,36 @@ export const useUpdateUserProfile = (
         .then((res) => res.data),
     ...options,
   });
+
+interface RestaurantsByCategoryResponse {
+  categoryName: string;
+  restaurants: {
+    restaurant_id: number;
+    name: string;
+    address: string;
+    rating: string | null;
+    cuisineType: string | null;
+    imageUrl: string;
+  }[];
+  totalCount: number;
+  page: number;
+  limit: number;
+}
+
+export const useRestaurantsByCategory = (
+  categoryId: number,
+  page: number = 1,
+  limit: number = 10,
+  options?: UseQueryOptions<RestaurantsByCategoryResponse>,
+) => {
+  return useQuery<RestaurantsByCategoryResponse>({
+    queryKey: ['restaurantsByCategory', categoryId, page, limit],
+    queryFn: () =>
+      apiService
+        .get<RestaurantsByCategoryResponse>('/restaurants/by-category', {
+          params: { categoryId, page, limit },
+        })
+        .then((res) => res.data),
+    ...options,
+  });
+};

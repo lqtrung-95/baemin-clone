@@ -10,6 +10,7 @@ import { FoodCategoriesModule } from './food-categories/food-categories.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { CartModule } from './cart/cart.module';
 import { CheckoutModule } from './checkout/checkout.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CheckoutModule } from './checkout/checkout.module';
     RestaurantsModule,
     CartModule,
     CheckoutModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

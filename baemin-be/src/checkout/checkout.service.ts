@@ -116,9 +116,20 @@ export class CheckoutService {
       throw new NotFoundException('User not found');
     }
 
+    // Fetch the restaurant ID from the first item in the order
+    const firstItem = await this.prisma.menu_items.findUnique({
+      where: { item_id: summary.items[0].item_id },
+      select: { restaurant_id: true },
+    });
+
+    if (!firstItem || !firstItem.restaurant_id) {
+      throw new NotFoundException('Restaurant not found for the ordered items');
+    }
+
     const order = await this.prisma.orders.create({
       data: {
         user_id: userId,
+        restaurant_id: firstItem.restaurant_id, // Add the restaurant ID here
         total_amount: summary.total_amount,
         status: 'PENDING',
         delivery_address: user.address,
@@ -150,6 +161,7 @@ export class CheckoutService {
       status: order.status,
       total_amount: Number(order.total_amount),
       created_at: order.created_at?.toISOString() || new Date().toISOString(),
+      restaurant_id: order.restaurant_id, // Include restaurant_id in the response
     };
   }
 }

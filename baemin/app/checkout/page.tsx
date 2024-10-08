@@ -39,6 +39,7 @@ export default function CheckoutPage() {
   const [voucherCode, setVoucherCode] = useState('');
 
   const { data: orderSummary, isLoading: isLoadingSummary } = useOrderSummary();
+  console.log('🚀 ~ CheckoutPage ~ orderSummary:', orderSummary);
   const { data: deliveryOptions } = useDeliveryOptions();
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     usePaymentMethods();
@@ -83,6 +84,16 @@ export default function CheckoutPage() {
     }
   };
 
+  useEffect(() => {
+    if (
+      deliveryOptions &&
+      deliveryOptions.options.length > 0 &&
+      !selectedDeliveryOptionId
+    ) {
+      setSelectedDeliveryOptionId(deliveryOptions.options[0].option_id);
+    }
+  }, [deliveryOptions, setSelectedDeliveryOptionId]);
+
   const handleVoucherApply = async (voucherCode: string) => {
     try {
       await applyVoucher.mutateAsync({ code: voucherCode });
@@ -102,7 +113,7 @@ export default function CheckoutPage() {
         },
         {
           onSuccess: (data) => {
-            router.push(`/statusorder?orderId=${data.order_id}`);
+            router.push(`/statusorder/${data.order_id}`);
           },
           onError: () => {
             message.error('Failed to place order');
@@ -172,20 +183,20 @@ export default function CheckoutPage() {
 
           <DetailsCheckout items={orderSummary?.items || []} />
           <div className="border-t w-full  mt-4">
-            <div className="ml-[40%]  flex flex-row justify-between items-center py-2 ">
+            {/* <div className="ml-[40%]  flex flex-row justify-between items-center py-2 ">
               <div className=" flex flex-row items-center gap-3">
                 <div className="text-beamin text-xl">
                   <AccountBookOutlined />
                 </div>
                 <span className="text-base"> Voucher của bạn</span>
               </div>
-              {/* <div
+              <div
                 className="pr-10 text-blue-600 cursor-pointer"
                 onClick={() => setIsVoucherModalVisible(true)}
               >
                 Chọn Voucher
-              </div> */}
-            </div>
+              </div>
+            </div> */}
           </div>
           <div className="border-t w-full grid grid-cols-12 h-28">
             <div className="col-span-5 border-r pt-4 pl-9 pb-10 flex flex-row items-center gap-3">
@@ -222,7 +233,7 @@ export default function CheckoutPage() {
                 <div className="col-span-2">
                   <span className=" text-sm">
                     {' '}
-                    ₫{orderSummary?.delivery_fee.toLocaleString() || '0'}
+                    ₫{orderSummary?.delivery_fee?.toLocaleString() || '0'}
                   </span>
                 </div>
               </div>
@@ -230,7 +241,7 @@ export default function CheckoutPage() {
           </div>
           <div className="border-t w-full  h-16 flex justify-end pr-5 gap-2 items-center">
             <span>
-              Tổng số tiền ({orderSummary?.items.length || 0} sản phẩm):
+              Tổng số tiền ({orderSummary?.items?.length || 0} sản phẩm):
             </span>
             <span className="text-beamin font-bold">
               ₫{orderSummary?.total_amount.toLocaleString() || '0'}
@@ -266,7 +277,7 @@ export default function CheckoutPage() {
             <div className="flex justify-between w-[30%] ">
               <div className="text-sm text-gray-900">Phí vận chuyển</div>
               <div className="text-sm mr-5">
-                ₫{orderSummary?.delivery_fee.toLocaleString() || '0'}
+                ₫{orderSummary?.delivery_fee?.toLocaleString() || '0'}
               </div>
             </div>
             <div className="flex justify-between w-[30%] ">

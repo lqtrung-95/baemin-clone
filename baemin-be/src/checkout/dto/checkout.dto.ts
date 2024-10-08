@@ -123,12 +123,16 @@ export class OrderConfirmationDto {
   status: string;
 
   @ApiProperty()
-  @IsDecimal()
+  @IsNumber()
   total_amount: number;
 
   @ApiProperty()
   @IsString()
   created_at: string;
+
+  @ApiProperty()
+  @IsNumber()
+  restaurant_id: number;
 }
 
 export class DeliveryOptionsDto {

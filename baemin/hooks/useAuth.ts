@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiService, { removeToken, setToken } from '@/services/api';
 import { users } from '@prisma/client';
+import { jwtDecode } from 'jwt-decode';
+
 interface LoginCredentials {
   email: string;
   password: string;
@@ -19,6 +21,32 @@ interface SignUpDto {
   address: string;
   first_name: string;
   last_name: string;
+}
+
+interface DecodedToken {
+  exp: number;
+}
+
+// Function to check if the token is expired
+function isTokenExpired(token: string): boolean {
+  try {
+    const decodedToken = jwtDecode<DecodedToken>(token);
+    const currentTime = Date.now() / 1000;
+    return decodedToken.exp < currentTime;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return true;
+  }
+}
+
+// Function to get the token and check if it's valid
+export function getValidToken(): string | null {
+  const token = localStorage.getItem('authToken');
+  if (token && !isTokenExpired(token)) {
+    return token;
+  }
+  removeToken();
+  return null;
 }
 
 export function useLogin() {
@@ -49,13 +77,18 @@ export function useSignup() {
 }
 
 // Profile hook
+
 export function useProfile() {
   return useQuery<users>({
     queryKey: ['profile'],
-    queryFn: () =>
-      apiService.get<users>('/auth/profile').then((res) => res.data),
-    // The profile should only be fetched if we have a token
-    enabled: !!localStorage.getItem('authToken'),
+    queryFn: async () => {
+      const token = getValidToken();
+      if (!token) {
+        throw new Error('No valid token');
+      }
+      return apiService.get<users>('/auth/profile').then((res) => res.data);
+    },
+    enabled: !!getValidToken(),
   });
 }
 
@@ -63,6 +96,5 @@ export function useProfile() {
 export function logout() {
   const queryClient = useQueryClient();
   removeToken();
-  // Clear any auth-related queries from the cache
   queryClient.clear();
 }

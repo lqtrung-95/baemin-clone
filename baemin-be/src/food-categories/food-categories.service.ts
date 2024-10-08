@@ -14,7 +14,7 @@ export class FoodCategoriesService {
     });
 
     return categories.map((category) => ({
-      id: category.category_id,
+      category_id: category.category_id,
       name: category.name,
       iconUrl: category.icon_url,
       displayOrder: category.display_order,

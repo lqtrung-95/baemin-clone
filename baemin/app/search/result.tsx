@@ -30,6 +30,19 @@ export default function ResultFood({
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="mt-4 text-xl font-semibold text-gray-600">
+          Không tìm thấy kết quả nào
+        </p>
+        <p className="mt-2 text-gray-500">
+          Vui lòng thử tìm kiếm với từ khóa khác
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="mt-3 flex flex-row flex-wrap gap-3">
@@ -64,19 +77,21 @@ export default function ResultFood({
           </div>
         ))}
       </div>
-      <div className="mt-4 flex justify-center">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            onClick={() => onPageChange(page)}
-            className={`mx-1 px-3 py-1 border rounded ${
-              currentPage === page ? 'bg-blue-500 text-white' : 'bg-white'
-            }`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => onPageChange(page)}
+              className={`mx-1 px-3 py-1 border rounded ${
+                currentPage === page ? 'bg-blue-500 text-white' : 'bg-white'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
     </>
   );
 }

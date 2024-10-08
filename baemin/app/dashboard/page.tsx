@@ -10,8 +10,10 @@ import {
   useFoodCategories,
   useFeaturedContent,
 } from '@/hooks/useApi';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const {
     data: banners,
     isLoading: isBannersLoading,
@@ -33,6 +35,7 @@ export default function Home() {
       name: category.name,
       imageSrc: category.icon_url || '/images/burger.jpg',
       description: 'Food Category',
+      id: category.category_id,
     })) || [];
 
   return (
@@ -50,6 +53,9 @@ export default function Home() {
                 <div
                   key={index}
                   className="flex flex-col gap-3 cursor-pointer hover:bg-slate-100"
+                  onClick={() => {
+                    router.push(`/search?category=${item.id}`);
+                  }}
                 >
                   <div className="flex flex-row items-center gap-1">
                     <Image

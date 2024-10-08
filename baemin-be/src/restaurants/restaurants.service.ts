@@ -6,7 +6,7 @@ import {
 import { PaginatedResponseDto } from '../common/dto/paginated-response.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FeaturedContentResponseDto } from './dto/featured-content-response.dto';
-import { RestaurantDto } from './dto/restaurant.dto';
+import { RestaurantDto, RestaurantsByCategoryDto } from './dto/restaurant.dto';
 import { SearchRestaurantDto } from './dto/search-restaurant.dto';
 
 @Injectable()
@@ -292,6 +292,74 @@ export class RestaurantsService {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async getRestaurantsByCategory(
+    categoryId: number,
+    page: number,
+    limit: number,
+  ): Promise<RestaurantsByCategoryDto> {
+    const skip = (page - 1) * limit;
+
+    const [restaurants, totalCount] = await Promise.all([
+      this.prisma.restaurants.findMany({
+        where: {
+          menu_items: {
+            some: {
+              category_id: categoryId,
+            },
+          },
+        },
+        select: {
+          restaurant_id: true,
+          name: true,
+          address: true,
+          rating: true,
+          cuisine_type: true,
+        },
+        skip,
+        take: Number(limit),
+      }),
+      this.prisma.restaurants.count({
+        where: {
+          menu_items: {
+            some: {
+              category_id: categoryId,
+            },
+          },
+        },
+      }),
+    ]);
+
+    if (restaurants.length === 0) {
+      throw new NotFoundException(
+        `No restaurants found for category ID ${categoryId}`,
+      );
+    }
+
+    const category = await this.prisma.food_categories.findUnique({
+      where: { category_id: categoryId },
+      select: { name: true },
+    });
+
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+    }
+
+    return {
+      categoryName: category.name,
+      restaurants: restaurants.map((restaurant) => ({
+        restaurant_id: restaurant.restaurant_id,
+        name: restaurant.name,
+        address: restaurant.address,
+        rating: restaurant.rating,
+        cuisineType: restaurant.cuisine_type || null,
+        imageUrl: '',
+      })),
+      totalCount,
+      page,
+      limit,
     };
   }
 }

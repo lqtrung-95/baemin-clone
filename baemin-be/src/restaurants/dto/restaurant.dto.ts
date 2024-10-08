@@ -20,3 +20,20 @@ export class RestaurantDto {
   @ApiProperty({ required: false })
   cuisineType?: string;
 }
+
+export class RestaurantsByCategoryDto {
+  @ApiProperty()
+  categoryName: string;
+
+  @ApiProperty({ type: [RestaurantDto] })
+  restaurants: RestaurantDto[];
+
+  @ApiProperty()
+  totalCount: number;
+
+  @ApiProperty()
+  page: number;
+
+  @ApiProperty()
+  limit: number;
+}

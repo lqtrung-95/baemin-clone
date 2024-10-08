@@ -68,9 +68,9 @@ export const useSetDeliveryAddress = () => {
       apiService
         .post<OrderSummary>('/checkout/delivery-address', address)
         .then((res) => res.data),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['orderSummary'], data);
-    },
+    // onSuccess: (data) => {
+    //   queryClient.setQueryData(['orderSummary'], data);
+    // },
   });
 };
 

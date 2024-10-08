@@ -1,3 +1,4 @@
+import { getValidToken, logout } from '@/hooks';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 
 const API_BASE_URL =
@@ -15,14 +16,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
 // Function to get the token from storage
-const getToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('authToken');
-  }
-  return null;
-};
 
 // Function to set the token in storage
 export const setToken = (token: string): void => {
@@ -41,9 +35,12 @@ export const removeToken = (): void => {
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = getToken();
+    const token = getValidToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      // Token is expired or not present, you might want to redirect to login or refresh the token here
+      logout();
     }
     return config;
   },
@@ -60,7 +57,7 @@ axiosInstance.interceptors.response.use(
       // Handle 401 Unauthorized errors
       if (error.response.status === 401) {
         // Remove the invalid token
-        removeToken();
+        logout();
         window.location.href = '/login';
       }
       console.error('Response error:', error.response.data);
@@ -89,6 +86,11 @@ export const apiService = {
     data: any,
     config: AxiosRequestConfig = {},
   ): Promise<AxiosResponse<T>> => axiosInstance.put<T>(url, data, config),
+  patch: <T>(
+    url: string,
+    data: any,
+    config: AxiosRequestConfig = {},
+  ): Promise<AxiosResponse<T>> => axiosInstance.patch<T>(url, data, config),
   delete: <T>(
     url: string,
     config: AxiosRequestConfig = {},

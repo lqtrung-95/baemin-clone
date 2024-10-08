@@ -21,10 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="w-full h-fit">
-        <HeaderNav />
-        <AntdRegistry>
-          <ReactQueryProvider>{children}</ReactQueryProvider>
-        </AntdRegistry>
+        <ReactQueryProvider>
+          <HeaderNav />
+          <AntdRegistry>{children}</AntdRegistry>
+        </ReactQueryProvider>
       </body>
     </html>
   );

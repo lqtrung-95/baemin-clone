@@ -11,6 +11,7 @@ import { FeaturedContentResponseDto } from './dto/featured-content-response.dto'
 import { RestaurantDto } from './dto/restaurant.dto';
 import { SearchRestaurantDto } from './dto/search-restaurant.dto';
 import { PaginatedResponseDto } from 'src/common/dto/paginated-response.dto';
+import { RestaurantsByCategoryDto } from './dto/restaurant.dto';
 
 @ApiTags('restaurants')
 @Controller('restaurants')
@@ -31,6 +32,28 @@ export class RestaurantsController {
     @Query('limit') limit: string = '10',
   ): Promise<FeaturedContentResponseDto> {
     return this.restaurantsService.getFeaturedContent(page, limit);
+  }
+
+  @Get('by-category')
+  @ApiOperation({ summary: 'Get restaurants by food category' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of restaurants retrieved successfully',
+    type: [RestaurantsByCategoryDto],
+  })
+  @ApiQuery({ name: 'categoryId', required: true, type: Number })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getRestaurantsByCategory(
+    @Query('categoryId', ParseIntPipe) categoryId: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<RestaurantsByCategoryDto> {
+    return this.restaurantsService.getRestaurantsByCategory(
+      categoryId,
+      page,
+      limit,
+    );
   }
 
   @Get('search')
@@ -105,7 +128,7 @@ export class RestaurantsController {
     description: 'Restaurant reviews retrieved successfully',
   })
   async getRestaurantReviews(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {

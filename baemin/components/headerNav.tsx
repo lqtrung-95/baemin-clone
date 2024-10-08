@@ -1,26 +1,47 @@
 'use client';
+
 import { Button, Select } from 'antd';
 import { SearchProps } from 'antd/es/input';
 import Search from 'antd/es/input/Search';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   HomeOutlined,
   SearchOutlined,
   SolutionOutlined,
   ShoppingCartOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
+import { useProfile, logout } from '@/hooks/useAuth'; // Import your auth hooks
+import { useCart } from '@/hooks/useCart'; // Import your cart hook
 
 export default function HeaderNav() {
   const router = useRouter();
+  const { data: profile, isLoading: isProfileLoading } = useProfile();
+  const { data: cart, isLoading: isCartLoading } = useCart();
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  useEffect(() => {
+    if (cart && cart.cart_items) {
+      setCartItemCount(cart.cart_items.length);
+    }
+  }, [cart]);
+
   const onSearch: SearchProps['onSearch'] = (value, _e, info) => {
     router.push('/search?q=' + value);
   };
+
   const navigation = () => {
     router.push('/dashboard');
   };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
   return (
-    <div className="w-full h-fix bg-white flex flex-row fixed  py-3 gap-4 justify-items-center	justify-center z-50	">
+    <div className="w-full h-fix bg-white flex flex-row fixed py-3 gap-4 justify-items-center justify-center z-50">
       <div
         onClick={navigation}
         className="flex-none w-fit h-full ml-10 cursor-pointer "
@@ -36,20 +57,20 @@ export default function HeaderNav() {
           </g>
         </svg>
       </div>
-      <div className="grow  flex flex-row items-center gap-9	 ">
-        <Select className="ml-10 w-28 	"></Select>
+      <div className="grow flex flex-row items-center gap-9">
+        <div className="ml-10 w-28"></div>
         <Search
-          className="w-1/3"
+          className="w-2/3"
           placeholder="input search text"
           enterButton="Tìm kiếm"
           size="large"
           onSearch={onSearch}
         />
       </div>
-      <div className="flex-none w-1/4  flex flex-row items-center  py-2">
+      <div className="flex-none w-1/4 flex flex-row items-center py-2">
         <Button
           href="/dashboard"
-          className="font-normal  leading-5 btn-home	"
+          className="font-normal leading-5 btn-home"
           style={{
             fontSize: '18px',
             height: '100%',
@@ -60,19 +81,35 @@ export default function HeaderNav() {
         >
           Trang Chủ
         </Button>
-        <Button
-          href="/login"
-          className="font-normal  leading-5 btn-home	"
-          style={{
-            fontSize: '18px',
-            height: '100%',
-            color: 'rgb(128, 128, 137)',
-          }}
-          type="text"
-          icon={<SolutionOutlined />}
-        >
-          Tài Khoản
-        </Button>
+        {!isProfileLoading && profile ? (
+          <Button
+            onClick={handleLogout}
+            className="font-normal leading-5 btn-home"
+            style={{
+              fontSize: '18px',
+              height: '100%',
+              color: 'rgb(128, 128, 137)',
+            }}
+            type="text"
+            icon={<LogoutOutlined />}
+          >
+            Đăng Xuất
+          </Button>
+        ) : (
+          <Button
+            href="/login"
+            className="font-normal leading-5 btn-home"
+            style={{
+              fontSize: '18px',
+              height: '100%',
+              color: 'rgb(128, 128, 137)',
+            }}
+            type="text"
+            icon={<SolutionOutlined />}
+          >
+            Tài Khoản
+          </Button>
+        )}
         <Button
           href="/cart"
           type="text"
@@ -84,12 +121,14 @@ export default function HeaderNav() {
           }}
           icon={<ShoppingCartOutlined />}
         ></Button>
-        <span
-          className="text-xs bg-red-600 relative rounded w-full text-white  bottom-3 right-4 text-center"
-          style={{ width: '15px', borderRadius: '50px' }}
-        >
-          1
-        </span>
+        {cartItemCount > 0 && (
+          <span
+            className="text-xs bg-red-600 relative rounded w-full text-white bottom-3 right-4 text-center"
+            style={{ width: '15px', borderRadius: '50px' }}
+          >
+            {cartItemCount}
+          </span>
+        )}
       </div>
     </div>
   );
